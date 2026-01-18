@@ -1,0 +1,12 @@
+# Binaries/Executables
+*.exe
+*.o
+*.obj
+
+# VS Code Folders
+.vscode/
+!.vscode/tasks.json
+
+# Temp files
+*.log
+*.tmp
