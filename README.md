@@ -30,4 +30,4 @@ A high-performance, polished vector-based tower defense game built from the grou
 * **[SPACE] / UI Button:** Discharge Red Pulse shockwave (requires charges).
 * **[U] Key:** Access System Armory during Build Phases.
 * **[Enter]:** Start waves / Initialize boot sequence.
-* **Keyboard:** Input your name on the System Failure screen to sync data to the Hall of Fame.
+* **Typing:** Input your name on the System Failure screen to sync data to the Hall of Fame.
