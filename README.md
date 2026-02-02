@@ -1,6 +1,15 @@
-# Vector Defense | Geometric Survival
+# 💠 Vector Defense | Geometric Survival
 
 A high-performance, polished vector-based tower defense game built from the ground up using **C++17** and **Raylib**. Protect the central core from evolving geometric threats through strategic node placement, progressive technology unlocks, and cinematic active abilities.
+
+---
+
+## 🚀 Play & Download
+
+### [**Play on Itch.io (Windows Download)**](https://samrc265.itch.io/vector-defense)
+*The most stable way to experience the Prime Edition. Simply download, extract, and boot.*
+
+---
 
 ## 🕹️ Gameplay Features
 
@@ -17,9 +26,9 @@ A high-performance, polished vector-based tower defense game built from the grou
 ## 🛠️ Requirements & Setup
 
 1. **Audio Assets:** Ensure the following files are in your project root:
-   * `blip.wav` (UI Interactions)
-   * `boom.wav` (Pulse Discharge)
-   * `shoot.wav` (Laser Fire)
+   * `sounds/blip.wav` (UI Interactions)
+   * `sounds/boom.wav` (Pulse Discharge)
+   * `sounds/shoot.wav` (Laser Fire)
 2. **Build:** Use the provided `tasks.json` or compile via terminal using the `-static` flag and linking `raylib`, `opengl32`, `gdi32`, and `winmm`.
 
 ## 🎮 Controls

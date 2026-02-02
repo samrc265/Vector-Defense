@@ -152,9 +152,10 @@ int main() {
     InitAudioDevice();
     SetTargetFPS(60);
 
-    sndBlip = LoadSound("blip.wav");
-    sndBoom = LoadSound("boom.wav");
-    sndShoot = LoadSound("shoot.wav");
+    // --- ASSET LOADING (Looking in sounds/ folder) ---
+    sndBlip = LoadSound("sounds/blip.wav");
+    sndBoom = LoadSound("sounds/boom.wav");
+    sndShoot = LoadSound("sounds/shoot.wav");
     LoadHighScores();
 
     Shader bloom = LoadShaderFromMemory(0, bloomShaderCode);
@@ -231,7 +232,6 @@ int main() {
             case PAUSED: break;
 
             case UPGRADE_MENU: {
-                // SHOP LOGIC - Moved from drawing phase to update phase to fix input issues
                 int slotCost = 400 + (maxTowers - 3) * 350;
                 int fireCost = 600 + (int)((0.8f - towerFireRate) * 10000);
 
@@ -241,7 +241,6 @@ int main() {
                         if (maxTowers == 7 && !teslaUnlocked) { teslaUnlocked = true; pendingTeslaNotify = true; }
                     }
                 }
-                // FIXED: Purchase Pulse Logic
                 if (CheckCollisionPointRec(mousePos, { SCREEN_WIDTH/2 - 200, 260, 400, 65 }) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                     if (currency >= 300) { currency -= 300; pulseWaveCharges++; PlaySound(sndBlip); }
                 }
@@ -273,7 +272,6 @@ int main() {
                 if (IsKeyPressed(KEY_TWO) && cryoUnlocked) currentSelection = TWR_CRYO;
                 if (IsKeyPressed(KEY_THREE) && teslaUnlocked) currentSelection = TWR_TESLA;
 
-                // Update phase handling for gameplay pulse button
                 if (waveActive && pulseWaveCharges > 0 && CheckCollisionPointRec(mousePos, pulseRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                     pulseWaveCharges--; shakeIntensity = 35.0f; pulseVisualRadius = 10.0f; PlaySound(sndBoom);
                     notifications.push_back({"PULSE DISCHARGED", 2.5f, V_RED});
@@ -352,8 +350,7 @@ int main() {
                     if (overdriveTimer > 0 && GetRandomValue(0, 4) == 0) particles.push_back({{t.position.x + (float)GetRandomValue(-15,15), t.position.y + (float)GetRandomValue(-15,15)}, {0, -120}, V_GOLD, 0.4f, 0.4f, false});
                     
                     float rate = (overdriveTimer > 0) ? 0.05f : towerFireRate;
-                    if (t.type == TWR_CRYO) { rate *= 1.5f; }
-                    if (t.type == TWR_TESLA) { rate *= 1.5f; }
+                    if (t.type == TWR_CRYO || t.type == TWR_TESLA) rate *= 1.5f;
                     
                     if (t.shootTimer >= rate) {
                         Enemy* target = nullptr; float minDist = towerRange;
@@ -361,7 +358,8 @@ int main() {
                         if (target) {
                             PlaySound(sndShoot); shakeIntensity += 1.5f; 
                             if (t.type == TWR_CRYO) { target->health -= 0.5f; target->slowTimer = 1.5f; lasers.push_back({ t.position, target->position, 0.07f, V_SKYBLUE }); }
-                            else if (t.type == TWR_TESLA) { target->health -= 0.8f; lasers.push_back({ t.position, target->position, 0.07f, V_GOLD });
+                            else if (t.type == TWR_TESLA) { 
+                                target->health -= 0.8f; lasers.push_back({ t.position, target->position, 0.07f, V_GOLD });
                                 Enemy* sec = nullptr; float sDist = 200.0f;
                                 for (auto& e2 : enemies) { if (&e2 == target) continue; float d2 = GetDistance(target->position, e2.position); if (d2 < sDist) { sDist = d2; sec = &e2; } }
                                 if (sec) { sec->health -= 0.6f; if (sec->health <= 0) sec->active = false; lasers.push_back({ target->position, sec->position, 0.12f, V_GOLD }); }
@@ -387,8 +385,8 @@ int main() {
                 for (auto it = notifications.begin(); it != notifications.end();) { it->timer -= dt; if (it->timer <= 0) it = notifications.erase(it); else ++it; }
                 if (empWaveRadius > 0) { empWaveRadius += 1600.0f * dt; if (empWaveRadius > 2500.0f) { empWaveRadius = 0; } }
                 if (pulseVisualRadius > 0) { pulseVisualRadius += 2200.0f * dt; if (pulseVisualRadius > 1500.0f) { pulseVisualRadius = 0; } }
-                if (empTimer > 0) { empTimer -= dt; }
-                if (overdriveTimer > 0) { overdriveTimer -= dt; }
+                if (empTimer > 0) empTimer -= dt;
+                if (overdriveTimer > 0) overdriveTimer -= dt;
 
                 if (coreHealth <= 0) { currentScreen = GAME_OVER; scoreSaved = false; playerName[0] = '\0'; letterCount = 0; }
                 if (IsKeyPressed(KEY_U) && !waveActive) { currentScreen = UPGRADE_MENU; }
@@ -481,7 +479,6 @@ int main() {
                 }
 
                 if (waveActive) {
-                    // Drawing phase calls to button should just render, not logic (handled in update phase)
                     if (pulseWaveCharges > 0) {
                         DrawRectangleRec(pulseRect, CheckCollisionPointRec(mousePos, pulseRect) ? ColorAlpha(V_SKYBLUE, 0.35f) : ColorAlpha(V_DARKGRAY, 0.6f));
                         DrawRectangleLinesEx(pulseRect, 2, CheckCollisionPointRec(mousePos, pulseRect) ? V_SKYBLUE : ColorAlpha(V_WHITE, 0.2f));
@@ -500,7 +497,7 @@ int main() {
                     if (DrawCustomButton({ SCREEN_WIDTH - 280, SCREEN_HEIGHT - 72, 250, 60 }, "START WAVE", V_LIME)) {
                         currentWave++; waveActive = true; enemiesToSpawn = 7 + (currentWave * 5); 
                         waveIntroTimer = 2.5f; 
-                        if (currentWave % 10 == 0) { bossInQueue = true; }
+                        if (currentWave % 10 == 0) bossInQueue = true;
                     }
                 }
                 if (currentScreen == UPGRADE_MENU) {
@@ -508,7 +505,6 @@ int main() {
                     DrawText("SYSTEM ARMORY", SCREEN_WIDTH/2 - 120, 60, 35, V_SKYBLUE); DrawText(TextFormat("AVAILABLE DATA: %d", currency), SCREEN_WIDTH/2 - MeasureText(TextFormat("AVAILABLE DATA: %d", currency), 24)/2, 120, 24, V_GOLD);
                     int sC = 400 + (maxTowers - 3) * 350; int fC = 600 + (int)((0.8f - towerFireRate) * 10000); 
                     
-                    // Buttons are rendered here, logic is in UPGRADE_MENU update block
                     DrawCustomButton({ SCREEN_WIDTH/2 - 200, 180, 400, 65 }, TextFormat("BUY NODE SLOT (%d)", sC), V_LIME);
                     DrawCustomButton({ SCREEN_WIDTH/2 - 200, 260, 400, 65 }, "PULSE CHARGE (300)", V_SKYBLUE);
                     DrawCustomButton({ SCREEN_WIDTH/2 - 200, 340, 400, 65 }, TextFormat("OVERCLOCK FIRE (%d)", fC), V_GOLD);
